@@ -47,7 +47,7 @@ class CreateDataModule(LightningDataModule):
         self.tokenized_datasets = self.raw_datasets.map(
             self.tokenize_function,
             batched=True,
-            num_proc=os.cpu_count(),
+            num_proc=1,
             remove_columns=self.raw_datasets["train"].column_names,
             desc="Running tokenizer on dataset",
         )
@@ -55,7 +55,7 @@ class CreateDataModule(LightningDataModule):
         self.lm_datasets = self.tokenized_datasets.map(
             self.group_texts,
             batched=True,
-            num_proc=os.cpu_count() -1,
+            num_proc=1,
             desc=f"Grouping texts in chunks of {self.max_token_len}",
         )
 
@@ -84,10 +84,10 @@ class CreateDataModule(LightningDataModule):
         return result
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=os.cpu_count())
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=1)
 
     def val_dataloader(self):
-        return DataLoader(self.vaild_dataset, batch_size=self.batch_size, num_workers=os.cpu_count())
+        return DataLoader(self.vaild_dataset, batch_size=self.batch_size, num_workers=1)
 
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=os.cpu_count())
