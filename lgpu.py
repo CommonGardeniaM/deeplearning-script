@@ -197,7 +197,7 @@ if __name__ == '__main__':
         accelerator="gpu",
         auto_scale_batch_size=True,
         accumulate_grad_batches=8,
-        strategy=DeepSpeedStrategy(offload_optimizer=True, stage=2, offload_params_device="cpu", allgather_bucket_size=2e8, reduce_bucket_size=2e8),
+        strategy=DeepSpeedStrategy(offload_optimizer=True, stage=2, allgather_bucket_size=2e8, reduce_bucket_size=2e8),
         precision=16,
 #         devices=1,  # limiting got iPython runs
     )
