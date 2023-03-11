@@ -199,7 +199,7 @@ if __name__ == '__main__':
         accumulate_grad_batches=2,
         strategy=DeepSpeedStrategy(offload_optimizer=True, stage=2, allgather_bucket_size=2e8, reduce_bucket_size=2e8),
         precision=16,
-        devices=２,  # limiting got iPython runs
+        devices=2,  # limiting got iPython runs
     )
 
     trainer.fit(model,  datamodule=data_module)
