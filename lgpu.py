@@ -169,7 +169,7 @@ class GPTTransformer(LightningModule):
         optimizer_grouped_parameters = [
             {
                 "params": [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
-                "weight_decay": 0.0,
+                "weight_decay": 0.01,
             },
             {
                 "params": [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)],
@@ -195,11 +195,11 @@ if __name__ == '__main__':
     trainer = Trainer(
         max_epochs=1,
         accelerator="gpu",
-        auto_scale_batch_size=True,
-        accumulate_grad_batches=8,
+#         auto_scale_batch_size=True,
+        accumulate_grad_batches=2,
         strategy=DeepSpeedStrategy(offload_optimizer=True, stage=2, allgather_bucket_size=2e8, reduce_bucket_size=2e8),
         precision=16,
-#         devices=1,  # limiting got iPython runs
+        devices=２,  # limiting got iPython runs
     )
 
     trainer.fit(model,  datamodule=data_module)
