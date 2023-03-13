@@ -35,7 +35,7 @@ import datasets
 import torch
 from accelerate import Accelerator, DistributedType
 from accelerate.logging import get_logger
-from accelerate.utils import set_seed
+from accelerate.utils import set_seed, DummyOptim, DummyScheduler
 from datasets import load_dataset
 from huggingface_hub import Repository, create_repo
 from torch.utils.data import DataLoader
@@ -469,7 +469,13 @@ def main():
         eval_dataset, collate_fn=default_data_collator, batch_size=args.per_device_eval_batch_size
     )
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
+    optimizer_cls = (
+        torch.optim.AdamW
+        if accelerator.state.deepspeed_plugin is None
+        or "optimizer" not in accelerator.state.deepspeed_plugin.deepspeed_config
+        else DummyOptim
+    )
+    optimizer = optimizer_cls(model.parameters(), lr=args.learning_rate)
 
     # Scheduler and math around the number of training steps.
     overrode_max_train_steps = False
@@ -478,12 +484,17 @@ def main():
         args.max_train_steps = args.num_train_epochs * num_update_steps_per_epoch
         overrode_max_train_steps = True
 
-    lr_scheduler = get_scheduler(
-        name=args.lr_scheduler_type,
-        optimizer=optimizer,
-        num_warmup_steps=args.num_warmup_steps * args.gradient_accumulation_steps,
-        num_training_steps=args.max_train_steps * args.gradient_accumulation_steps,
-    )
+    if (accelerator.state.deepspeed_plugin is None or "scheduler" not in accelerator.state.deepspeed_plugin.deepspeed_config):
+        lr_scheduler = get_scheduler(
+            name=args.lr_scheduler_type,
+            optimizer=optimizer,
+            num_warmup_steps=args.num_warmup_steps,
+            num_training_steps=args.max_train_steps,
+        )
+    else:
+        lr_scheduler = DummyScheduler(
+            optimizer, total_num_steps=args.max_train_steps, warmup_num_steps=args.num_warmup_steps
+        )
 
     # Prepare everything with our `accelerator`.
     model, optimizer, train_dataloader, eval_dataloader, lr_scheduler = accelerator.prepare(
