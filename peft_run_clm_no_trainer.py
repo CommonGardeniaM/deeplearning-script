@@ -381,8 +381,9 @@ def main():
         from_tf=bool(".ckpt" in args.model_name_or_path),
         config=config,
     )
-    model = get_peft_model(model, peft_config)
+
     peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1)
+    model = get_peft_model(model, peft_config)
     model.print_trainable_parameters()
 
     # Preprocessing the datasets.
