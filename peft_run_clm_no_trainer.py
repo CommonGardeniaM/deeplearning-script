@@ -376,8 +376,8 @@ def main():
             "You can do it from another script, save it, and load it from here, using --tokenizer_name."
         )
 
-      model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, device_map='auto')
-        
+    model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, device_map='auto')
+
 #     model = AutoModelForCausalLM.from_pretrained(
 #         args.model_name_or_path,
 #         from_tf=bool(".ckpt" in args.model_name_or_path),
