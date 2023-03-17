@@ -282,16 +282,6 @@ def main():
     if args.seed is not None:
         set_seed(args.seed)
 
-    if args.tokenizer_name:
-        tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_name, use_fast=not args.use_slow_tokenizer)
-    elif args.model_name_or_path:
-        tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=not args.use_slow_tokenizer)
-    else:
-        raise ValueError(
-            "You are instantiating a new tokenizer from scratch. This is not supported by this script."
-            "You can do it from another script, save it, and load it from here, using --tokenizer_name."
-        )
-
     model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, low_cpu_mem_usage=True)
 
 #     model = AutoModelForCausalLM.from_pretrained(
@@ -305,7 +295,15 @@ def main():
     model = get_peft_model(model, peft_config)
     model.print_trainable_parameters()
         
-        
+    if args.tokenizer_name:
+        tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_name, use_fast=not args.use_slow_tokenizer)
+    elif args.model_name_or_path:
+        tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=not args.use_slow_tokenizer)
+    else:
+        raise ValueError(
+            "You are instantiating a new tokenizer from scratch. This is not supported by this script."
+            "You can do it from another script, save it, and load it from here, using --tokenizer_name."
+        )
         
     # Handle the repository creation
     if accelerator.is_main_process:
