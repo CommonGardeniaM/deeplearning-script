@@ -358,13 +358,13 @@ def main():
     #
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
-    if args.config_name:
-        config = AutoConfig.from_pretrained(args.config_name)
-    elif args.model_name_or_path:
-        config = AutoConfig.from_pretrained(args.model_name_or_path)
-    else:
-        config = CONFIG_MAPPING[args.model_type]()
-        logger.warning("You are instantiating a new config instance from scratch.")
+#     if args.config_name:
+#         config = AutoConfig.from_pretrained(args.config_name)
+#     elif args.model_name_or_path:
+#         config = AutoConfig.from_pretrained(args.model_name_or_path)
+#     else:
+#         config = CONFIG_MAPPING[args.model_type]()
+#         logger.warning("You are instantiating a new config instance from scratch.")
 
     if args.tokenizer_name:
         tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_name, use_fast=not args.use_slow_tokenizer)
@@ -376,12 +376,14 @@ def main():
             "You can do it from another script, save it, and load it from here, using --tokenizer_name."
         )
 
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model_name_or_path,
-        from_tf=bool(".ckpt" in args.model_name_or_path),
+      model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, device_map='auto')
+        
+#     model = AutoModelForCausalLM.from_pretrained(
+#         args.model_name_or_path,
+#         from_tf=bool(".ckpt" in args.model_name_or_path),
 #         config=config,
-        device_map='auto',
-    )
+#         device_map='auto',
+#     )
 
     peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1)
     model = get_peft_model(model, peft_config)
