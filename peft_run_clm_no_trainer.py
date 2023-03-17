@@ -282,6 +282,31 @@ def main():
     if args.seed is not None:
         set_seed(args.seed)
 
+    if args.tokenizer_name:
+        tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_name, use_fast=not args.use_slow_tokenizer)
+    elif args.model_name_or_path:
+        tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=not args.use_slow_tokenizer)
+    else:
+        raise ValueError(
+            "You are instantiating a new tokenizer from scratch. This is not supported by this script."
+            "You can do it from another script, save it, and load it from here, using --tokenizer_name."
+        )
+
+    model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, low_cpu_mem_usage=True)
+
+#     model = AutoModelForCausalLM.from_pretrained(
+#         args.model_name_or_path,
+#         from_tf=bool(".ckpt" in args.model_name_or_path),
+#         config=config,
+#         device_map='auto',
+#     )
+
+    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1)
+    model = get_peft_model(model, peft_config)
+    model.print_trainable_parameters()
+        
+        
+        
     # Handle the repository creation
     if accelerator.is_main_process:
         if args.push_to_hub:
@@ -366,28 +391,9 @@ def main():
 #         config = CONFIG_MAPPING[args.model_type]()
 #         logger.warning("You are instantiating a new config instance from scratch.")
 
-    if args.tokenizer_name:
-        tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_name, use_fast=not args.use_slow_tokenizer)
-    elif args.model_name_or_path:
-        tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=not args.use_slow_tokenizer)
-    else:
-        raise ValueError(
-            "You are instantiating a new tokenizer from scratch. This is not supported by this script."
-            "You can do it from another script, save it, and load it from here, using --tokenizer_name."
-        )
 
-    model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, low_cpu_mem_usage=True)
 
-#     model = AutoModelForCausalLM.from_pretrained(
-#         args.model_name_or_path,
-#         from_tf=bool(".ckpt" in args.model_name_or_path),
-#         config=config,
-#         device_map='auto',
-#     )
-
-    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1)
-    model = get_peft_model(model, peft_config)
-    model.print_trainable_parameters()
+    #old tokenizer and model load line
 
     # Preprocessing the datasets.
     # First we tokenize all the texts.
