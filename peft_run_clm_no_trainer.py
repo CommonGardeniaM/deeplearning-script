@@ -282,7 +282,7 @@ def main():
     if args.seed is not None:
         set_seed(args.seed)
 
-    model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, low_cpu_mem_usage=True)
+    model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path)
 
 #     model = AutoModelForCausalLM.from_pretrained(
 #         args.model_name_or_path,
